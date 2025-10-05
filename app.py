@@ -230,26 +230,20 @@ def create_download_link(content, filename, file_format="markdown"):
 # === TAB 1: OUTLINE OPTIMIZER ===
 def audience_research_analysis(keyword, model):
     """Perform deep audience research and search intent analysis"""
-    prompt = f"""Conduct advanced audience research for the keyword/topic: "{keyword}"
+    prompt = f"""You are an expert Digital Marketing Strategist and Audience Researcher, specializing in deep psychological profiling and cross-platform search behavior analysis.
 
-Focus on:
-1. Ideal Customer Profile (ICP) - Demographics and psychographics
-2. Core pain points and frustrations that drive searches
-3. Emotional triggers and psychological motivations
-4. Search behaviors across platforms (Google, ChatGPT, Claude, Perplexity, Gemini)
-5. User intent clusters (informational, transactional, navigational, investigational)
-6. Common questions and information gaps
-7. Resonance strategies - how to connect with this audience
+Your primary objective is to conduct advanced, data-driven audience research for the specified keyword/topic: "{keyword}". This analysis must be comprehensive, actionable, and focus on understanding the user's journey, motivations, and information needs across modern search environments.
 
-Provide a comprehensive analysis structured as:
-- **Demographics & Psychographics**: Who searches for this?
-- **Pain Points**: What problems are they trying to solve?
-- **Emotional Triggers**: What drives their search behavior?
-- **Intent Clusters**: What are they really looking for?
-- **Key Questions**: Top 10 questions they ask
-- **Resonance Strategy**: How to create content that connects
+The analysis must cover the following seven critical dimensions in detail:
+1. **Ideal Customer Profile (ICP):** Detailed demographics and psychographics.
+2. **Core Pain Points:** Specific frustrations and problems driving the search.
+3. **Emotional Triggers:** Underlying psychological motivations for seeking information.
+4. **Cross-Platform Search Behavior:** How users search for this topic specifically on Google, ChatGPT, Claude, Perplexity, and Gemini.
+5. **User Intent Clusters:** Categorization of intent (informational, transactional, navigational, investigational).
+6. **Information Gaps:** Common questions and missing information users are trying to fill.
+7. **Resonance Strategies:** Actionable methods for creating content that deeply connects with this audience.
 
-Be specific, actionable, and data-driven in your analysis."""
+The final output must be highly specific, actionable, and grounded in analytical insight. Avoid generic statements. Focus on providing depth in each area requested. The analysis must be data-driven."""
 
     return call_ai_model(prompt, model, max_tokens=3000)
 
@@ -360,19 +354,17 @@ def keyword_relevance_analysis(primary_keyword, keyword_list, draft_content, nlp
 
 def generate_keyword_integration(keyword, paragraph_context, model):
     """Generate natural keyword integration"""
-    prompt = f"""You are a skilled content writer. Rewrite the following paragraph to naturally integrate the keyword while maintaining flow and readability.
+    prompt = f"""You are an expert SEO Content Editor specializing in seamless keyword integration and natural language flow.
+
+Your primary objective is to rewrite the provided paragraph, ensuring the specified keyword is integrated contextually and naturally. The revised paragraph must maintain the original tone, structure, and overall meaning.
 
 KEYWORD TO INTEGRATE: {keyword}
+ORIGINAL PARAGRAPH: {paragraph_context}
 
-ORIGINAL PARAGRAPH:
-{paragraph_context}
-
-REQUIREMENTS:
-- Integrate the keyword naturally and contextually
-- Maintain the original tone and structure
-- Keep paragraph length similar (50-200 words)
-- Ensure it reads naturally, not stuffed
-- Make it copy-paste ready
+- **Integration Quality:** The keyword must be woven into the text so that it reads as if it were originally intended to be there (no keyword stuffing).
+- **Tone and Structure:** Strictly adhere to the tone and structural flow of the original paragraph.
+- **Length Constraint:** The final rewritten paragraph must remain within the original length range, ideally between 50 and 200 words.
+- **Readiness:** The output must be immediately copy-paste ready for publication.
 
 OUTPUT: Only provide the rewritten paragraph, nothing else."""
 
@@ -380,26 +372,26 @@ OUTPUT: Only provide the rewritten paragraph, nothing else."""
 
 def ai_tool_optimization(draft_content, primary_keyword, keyword_list, model):
     """Apply 10-item AI optimization checklist"""
-    prompt = f"""You are an expert content optimizer for AI search tools (Google AI Overviews, ChatGPT, Claude, Perplexity).
+    prompt = f"""You are an elite Content Optimization Specialist, specifically trained in maximizing content performance for modern AI Search Engines and Generative AI platforms (including Google AI Overviews, ChatGPT, Claude, and Perplexity). Your primary objective is to transform the provided content draft into a highly optimized, authoritative, and direct piece of content that satisfies complex AI ranking signals.
+
+The core task is to apply a precise set of 10 content optimization rules to the provided DRAFT CONTENT, using the specified KEYWORDS to guide semantic relevance and depth. The final output must strictly adhere to all ten optimization criteria listed below.
 
 PRIMARY KEYWORD: {primary_keyword}
-KEYWORDS: {', '.join(keyword_list[:10])}
+KEYWORDS TO INTEGRATE: {', '.join(keyword_list[:10])}
+CONTENT DRAFT TO OPTIMIZE: {draft_content}
 
-CONTENT DRAFT:
-{draft_content}
+Apply the following 10 mandatory optimizations sequentially and thoroughly:
 
-Apply these 10 optimizations:
-
-1. **Answer-First Introduction**: Rewrite opening 30-50 words to directly answer core query
-2. **Question-Based H2s**: Convert all H2 headings to natural questions
-3. **Semantic Chunks**: Ensure 75-300 word self-contained sections
-4. **Answer-Evidence-Context**: Restructure chunks (answer → evidence → context)
-5. **Direct Sentences**: Convert to active voice, Subject-Verb-Object
-6. **Informational Density**: Increase specifics by 20% (numbers, entities)
-7. **Attribute Claims**: Replace generics with "A 2023 study by XYZ found..."
-8. **Signal Experience**: Add "In our testing..." where applicable
-9. **FAQ Section**: Append 3-10 long-tail Q&A pairs
-10. **Title & Meta**: Generate optimized title (<60 chars) and meta (140-160 chars)
+1. **Answer-First Introduction**: Rewrite the opening section (30-50 words) to provide an immediate, direct answer to the core query implied by the primary keyword.
+2. **Question-Based H2s**: Systematically convert all existing H2 headings into natural, user-intent-driven questions.
+3. **Semantic Chunking**: Ensure every resulting content section is self-contained and falls within a length range of 75 to 300 words.
+4. **A-E-C Structure**: Restructure the content within each chunk following the strict sequence: **Answer** (direct response) → **Evidence** (supporting data/facts) → **Context** (broader implications/background).
+5. **Active Voice & Clarity**: Convert all sentences to active voice, prioritizing a clear Subject-Verb-Object structure for maximum readability.
+6. **Informational Density Boost**: Increase the density of specific, verifiable details (e.g., numbers, specific entities, dates) by approximately 20% across the body.
+7. **Claim Attribution**: Replace vague or generic statements with specific attribution. For example, change general claims to formats like: "A 2023 study by XYZ found..." or "According to industry standard ABC..."
+8. **Demonstrate Authority**: Integrate phrases that signal direct experience or testing, such as "In our testing..." or "Based on our hands-on evaluation...", where contextually appropriate.
+9. **Long-Tail FAQ Section**: Append a dedicated FAQ section containing between 3 and 10 distinct, long-tail questions and their corresponding detailed answers.
+10. **SEO Metadata Generation**: Generate an optimized Title Tag (must be under 60 characters) and a compelling Meta Description (must be between 140 and 160 characters).
 
 OUTPUT the fully optimized content in Markdown format with clear section breaks. Mark changes with [OPTIMIZED] tags inline."""
 
@@ -738,4 +730,5 @@ GOOGLE_API_KEY = "your-key" """)
                     )
 
 if __name__ == "__main__":
+
     main()
