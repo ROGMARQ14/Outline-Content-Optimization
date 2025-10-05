@@ -23,6 +23,11 @@ OPENAI_API_KEY = "sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 4. Click "Create new secret key"
 5. Copy and save immediately (shown once only!)
 
+**Available OpenAI Models:**
+- GPT-4o - Latest, most capable model
+- GPT-4o Mini - Fast & efficient for most tasks
+- GPT-4 Turbo - Balanced performance
+
 ### Option 2: Using Anthropic Only
 ```toml
 # Add this to your Streamlit Secrets
@@ -36,11 +41,42 @@ ANTHROPIC_API_KEY = "sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 4. Click "Create Key"
 5. Copy and save the key
 
-### Option 3: Using Both (Recommended)
+**Available Anthropic Models:**
+- Claude 3.5 Sonnet - Recommended for quality/speed balance
+- Claude 3.5 Haiku - Fastest, most cost-effective Claude
+- Claude 3 Opus - Most capable (older generation)
+
+### Option 3: Using Anthropic + OpenAI
 ```toml
 # Add this to your Streamlit Secrets
 OPENAI_API_KEY = "sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ANTHROPIC_API_KEY = "sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+
+### Option 4: Using Google Gemini Only
+```toml
+# Add this to your Streamlit Secrets
+GOOGLE_API_KEY = "AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+
+**Get your Google API Key:**
+1. Go to [aistudio.google.com](https://aistudio.google.com)
+2. Sign in with Google account
+3. Click "Get API Key"
+4. Create API key in new or existing project
+5. Copy and save the key
+
+**Available Gemini Models:**
+- Gemini 2.0 Flash (Experimental) - Fastest, most cost-effective
+- Gemini 1.5 Pro - Balanced performance
+- Gemini 1.5 Flash - Fast & cost-effective
+
+### Option 5: Using All Three (Maximum Flexibility - Recommended)
+```toml
+# Add this to your Streamlit Secrets
+OPENAI_API_KEY = "sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+ANTHROPIC_API_KEY = "sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+GOOGLE_API_KEY = "AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
 ## ✅ Verification Steps
@@ -50,12 +86,29 @@ After adding secrets:
 1. **Save** the secrets configuration
 2. **Restart** your app (click "Reboot app" button)
 3. **Check sidebar** in the app - should show:
-   - ✅ OpenAI API Connected
-   - ✅ Anthropic API Connected
-4. If you see ⚠️ warnings, double-check:
-   - Key names match exactly (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`)
+   - ✅ OpenAI API Connected (if configured)
+   - ✅ Anthropic API Connected (if configured)
+   - ✅ Google Gemini API Connected (if configured)
+4. The **Model Selector** will automatically show only models from providers with configured API keys
+5. If you see ⚠️ warnings, double-check:
+   - Key names match exactly (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`)
    - Keys are valid and active
    - No extra spaces or quotes around values
+
+## 🎯 How Smart Model Detection Works
+
+The app automatically:
+- ✅ **Detects** which API keys are present in your secrets
+- ✅ **Shows only** models from configured providers
+- ✅ **Hides** unavailable providers completely
+- ✅ **Prevents errors** by not offering models you can't use
+
+**Examples:**
+- Only have OpenAI key? → See only GPT models
+- Have Anthropic + Google? → See Claude and Gemini models (no GPT)
+- Have all three? → Full selection of all models
+
+You can mix and match any combination of providers!
 
 ## 💰 Cost Considerations
 
@@ -69,11 +122,19 @@ After adding secrets:
 - Typical optimization request: $0.01 - $0.08
 - **Recommended**: Start with $10 credit for testing
 
+### Google Gemini Pricing
+- **Gemini 1.5 Pro**: Free tier available (60 requests/minute)
+- **Gemini 2.0 Flash**: ~$0.075 per 1M input tokens, ~$0.30 per 1M output tokens
+- Typical optimization request: $0.001 - $0.03 (most cost-effective)
+- **Recommended**: Start with free tier for testing
+
 ### Budget Tips
-1. Start with one provider to test
+1. **Start with Google Gemini** (free tier) for initial testing
 2. Monitor usage in API dashboards
 3. Set spending limits in provider settings
-4. Use Anthropic for cost-effectiveness (recommended)
+4. Use Gemini for cost-effectiveness (cheapest)
+5. Use Anthropic for quality/cost balance
+6. Use OpenAI for specific GPT-4o features
 
 ## 🔒 Security Best Practices
 
@@ -135,8 +196,9 @@ If all above work ✅ → Setup complete!
 ### App loads but features don't work
 **Solution**:
 - Check browser console (F12) for errors
-- Verify both API keys are set (if using both)
-- Test with single provider first
+- Verify at least one API key is configured
+- The model selector should show available models automatically
+- If no models appear, recheck secrets configuration
 - Check Streamlit logs in app dashboard
 
 ## 📱 Mobile Access

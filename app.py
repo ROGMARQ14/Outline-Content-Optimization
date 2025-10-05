@@ -1,6 +1,7 @@
 import streamlit as st
 import anthropic
 import openai
+import google.generativeai as genai
 from sentence_transformers import SentenceTransformer
 import spacy
 from sklearn.metrics.pairwise import cosine_similarity
@@ -81,14 +82,44 @@ def get_api_keys():
     try:
         openai_key = st.secrets.get("OPENAI_API_KEY", "")
         anthropic_key = st.secrets.get("ANTHROPIC_API_KEY", "")
-        return openai_key, anthropic_key
+        google_key = st.secrets.get("GOOGLE_API_KEY", "")
+        return openai_key, anthropic_key, google_key
     except:
-        return "", ""
+        return "", "", ""
+
+def get_available_models():
+    """Get available models based on configured API keys"""
+    openai_key, anthropic_key, google_key = get_api_keys()
+    
+    models = {}
+    
+    if openai_key:
+        models["OpenAI"] = {
+            "gpt-4o": "GPT-4o (Latest, Most Capable)",
+            "gpt-4o-mini": "GPT-4o Mini (Fast & Efficient)",
+            "gpt-4-turbo": "GPT-4 Turbo (Balanced)"
+        }
+    
+    if anthropic_key:
+        models["Anthropic"] = {
+            "claude-3-5-sonnet-20241022": "Claude 3.5 Sonnet (Recommended)",
+            "claude-3-5-haiku-20241022": "Claude 3.5 Haiku (Fast)",
+            "claude-3-opus-20240229": "Claude 3 Opus (Most Capable)"
+        }
+    
+    if google_key:
+        models["Google"] = {
+            "gemini-2.0-flash-exp": "Gemini 2.0 Flash (Experimental, Fastest)",
+            "gemini-1.5-pro": "Gemini 1.5 Pro (Balanced)",
+            "gemini-1.5-flash": "Gemini 1.5 Flash (Fast & Cost-Effective)"
+        }
+    
+    return models
 
 # AI API Functions
 def call_openai(prompt, model="gpt-4o", max_tokens=4000):
     """Call OpenAI API"""
-    openai_key, _ = get_api_keys()
+    openai_key, _, _ = get_api_keys()
     if not openai_key:
         st.error("OpenAI API key not found in secrets!")
         return None
@@ -108,7 +139,7 @@ def call_openai(prompt, model="gpt-4o", max_tokens=4000):
 
 def call_anthropic(prompt, model="claude-3-5-sonnet-20241022", max_tokens=4000):
     """Call Anthropic API"""
-    _, anthropic_key = get_api_keys()
+    _, anthropic_key, _ = get_api_keys()
     if not anthropic_key:
         st.error("Anthropic API key not found in secrets!")
         return None
@@ -123,6 +154,43 @@ def call_anthropic(prompt, model="claude-3-5-sonnet-20241022", max_tokens=4000):
         return message.content[0].text
     except Exception as e:
         st.error(f"Anthropic API Error: {str(e)}")
+        return None
+
+def call_gemini(prompt, model="gemini-1.5-pro", max_tokens=4000):
+    """Call Google Gemini API"""
+    _, _, google_key = get_api_keys()
+    if not google_key:
+        st.error("Google API key not found in secrets!")
+        return None
+    
+    try:
+        genai.configure(api_key=google_key)
+        model_instance = genai.GenerativeModel(model)
+        
+        generation_config = {
+            "max_output_tokens": max_tokens,
+            "temperature": 0.7,
+        }
+        
+        response = model_instance.generate_content(
+            prompt,
+            generation_config=generation_config
+        )
+        return response.text
+    except Exception as e:
+        st.error(f"Google Gemini API Error: {str(e)}")
+        return None
+
+def call_ai_model(prompt, model_string, max_tokens=4000):
+    """Universal AI caller that routes to the correct provider"""
+    if model_string.startswith("gpt"):
+        return call_openai(prompt, model_string, max_tokens)
+    elif model_string.startswith("claude"):
+        return call_anthropic(prompt, model_string, max_tokens)
+    elif model_string.startswith("gemini"):
+        return call_gemini(prompt, model_string, max_tokens)
+    else:
+        st.error("Unknown model type!")
         return None
 
 # Utility Functions
@@ -160,7 +228,7 @@ def create_download_link(content, filename, file_format="markdown"):
     return href
 
 # === TAB 1: OUTLINE OPTIMIZER ===
-def audience_research_analysis(keyword, ai_provider="anthropic"):
+def audience_research_analysis(keyword, model):
     """Perform deep audience research and search intent analysis"""
     prompt = f"""Conduct advanced audience research for the keyword/topic: "{keyword}"
 
@@ -183,12 +251,9 @@ Provide a comprehensive analysis structured as:
 
 Be specific, actionable, and data-driven in your analysis."""
 
-    if ai_provider == "openai":
-        return call_openai(prompt, max_tokens=3000)
-    else:
-        return call_anthropic(prompt, max_tokens=3000)
+    return call_ai_model(prompt, model, max_tokens=3000)
 
-def optimize_outline(keyword, draft_outline, query_fanout, audience_insights, ai_provider="anthropic"):
+def optimize_outline(keyword, draft_outline, query_fanout, audience_insights, model):
     """Optimize blog outline with AI analysis"""
     prompt = f"""You are an expert SEO content strategist. Optimize the following blog post outline.
 
@@ -227,10 +292,7 @@ OUTPUT FORMAT:
 
 Ensure logical flow, comprehensive coverage, and SEO optimization. Make it ready for a writer to execute."""
 
-    if ai_provider == "openai":
-        return call_openai(prompt, max_tokens=4000)
-    else:
-        return call_anthropic(prompt, max_tokens=4000)
+    return call_ai_model(prompt, model, max_tokens=4000)
 
 # === TAB 2: DRAFT OPTIMIZER ===
 def keyword_relevance_analysis(primary_keyword, keyword_list, draft_content, nlp, semantic_model):
@@ -296,7 +358,7 @@ def keyword_relevance_analysis(primary_keyword, keyword_list, draft_content, nlp
     
     return results
 
-def generate_keyword_integration(keyword, paragraph_context, ai_provider="anthropic"):
+def generate_keyword_integration(keyword, paragraph_context, model):
     """Generate natural keyword integration"""
     prompt = f"""You are a skilled content writer. Rewrite the following paragraph to naturally integrate the keyword while maintaining flow and readability.
 
@@ -314,12 +376,9 @@ REQUIREMENTS:
 
 OUTPUT: Only provide the rewritten paragraph, nothing else."""
 
-    if ai_provider == "openai":
-        return call_openai(prompt, max_tokens=500)
-    else:
-        return call_anthropic(prompt, max_tokens=500)
+    return call_ai_model(prompt, model, max_tokens=500)
 
-def ai_tool_optimization(draft_content, primary_keyword, keyword_list, ai_provider="anthropic"):
+def ai_tool_optimization(draft_content, primary_keyword, keyword_list, model):
     """Apply 10-item AI optimization checklist"""
     prompt = f"""You are an expert content optimizer for AI search tools (Google AI Overviews, ChatGPT, Claude, Perplexity).
 
@@ -344,10 +403,7 @@ Apply these 10 optimizations:
 
 OUTPUT the fully optimized content in Markdown format with clear section breaks. Mark changes with [OPTIMIZED] tags inline."""
 
-    if ai_provider == "openai":
-        return call_openai(prompt, max_tokens=4000)
-    else:
-        return call_anthropic(prompt, max_tokens=4000)
+    return call_ai_model(prompt, model, max_tokens=4000)
 
 # === MAIN APP ===
 def main():
@@ -357,8 +413,10 @@ def main():
     # Sidebar - API Configuration Check
     with st.sidebar:
         st.header("⚙️ Configuration")
-        openai_key, anthropic_key = get_api_keys()
+        openai_key, anthropic_key, google_key = get_api_keys()
         
+        # Display API connection status
+        st.subheader("API Connection Status")
         if openai_key:
             st.success("✅ OpenAI API Connected")
         else:
@@ -369,18 +427,52 @@ def main():
         else:
             st.warning("⚠️ Anthropic API Key Missing")
         
+        if google_key:
+            st.success("✅ Google Gemini API Connected")
+        else:
+            st.warning("⚠️ Google API Key Missing")
+        
+        # Get available models
+        available_models = get_available_models()
+        
+        if not available_models:
+            st.error("❌ No API keys configured! Please add at least one API key to Streamlit Secrets.")
+            st.stop()
+        
+        st.markdown("---")
+        
+        # Smart Model Selector - only shows models from configured providers
+        st.subheader("🤖 AI Model Selection")
+        
+        # Flatten the models dictionary for selection
+        model_options = {}
+        for provider, models in available_models.items():
+            for model_id, model_name in models.items():
+                model_options[f"{provider}: {model_name}"] = model_id
+        
+        selected_model_display = st.selectbox(
+            "Select AI Model:",
+            options=list(model_options.keys()),
+            help="Only models from configured API providers are shown"
+        )
+        
+        selected_model = model_options[selected_model_display]
+        
+        # Display model info
+        st.info(f"**Active Model:** `{selected_model}`")
+        
         st.markdown("---")
         st.markdown("**💡 Setup Instructions:**")
         st.markdown("Add API keys to Streamlit Cloud Secrets:")
         st.code("""OPENAI_API_KEY = "your-key"
-ANTHROPIC_API_KEY = "your-key" """)
+ANTHROPIC_API_KEY = "your-key"
+GOOGLE_API_KEY = "your-key" """)
         
         st.markdown("---")
-        ai_provider = st.radio(
-            "Select AI Provider:",
-            ["anthropic", "openai"],
-            help="Choose which AI API to use for analysis"
-        )
+        st.markdown("**💰 Cost Comparison:**")
+        st.markdown("- 🥇 **Gemini**: Most cost-effective (free tier)")
+        st.markdown("- 🥈 **Anthropic**: Best quality/cost ratio")
+        st.markdown("- 🥉 **OpenAI**: Most capable models")
     
     # Load NLP models
     with st.spinner("Loading NLP models..."):
@@ -438,7 +530,7 @@ ANTHROPIC_API_KEY = "your-key" """)
                 with st.spinner("🔍 Step 1/2: Conducting deep audience research..."):
                     progress_bar = st.progress(0)
                     
-                    audience_insights = audience_research_analysis(keyword_outline, ai_provider)
+                    audience_insights = audience_research_analysis(keyword_outline, selected_model)
                     st.session_state.audience_insights = audience_insights
                     progress_bar.progress(50)
                     
@@ -459,7 +551,7 @@ ANTHROPIC_API_KEY = "your-key" """)
                         draft_outline,
                         fanout_text,
                         audience_insights,
-                        ai_provider
+                        selected_model
                     )
                     
                     st.session_state.outline_result = optimized_outline
@@ -573,7 +665,7 @@ ANTHROPIC_API_KEY = "your-key" """)
                             integrated_paragraph = generate_keyword_integration(
                                 kw_data['keyword'],
                                 kw_data['paragraph_preview'],
-                                ai_provider
+                                selected_model
                             )
                             
                             integration_results.append({
@@ -602,7 +694,7 @@ ANTHROPIC_API_KEY = "your-key" """)
                         draft_content,
                         keyword_draft,
                         keyword_list,
-                        ai_provider
+                        selected_model
                     )
                     
                     progress2.progress(100)
