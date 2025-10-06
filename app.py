@@ -12,6 +12,10 @@ import re
 from io import BytesIO
 import base64
 from datetime import datetime
+from docx import Document
+from docx.shared import Pt, RGBColor, Inches
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+import markdown
 
 # Page configuration
 st.set_page_config(
@@ -253,6 +257,70 @@ def create_download_link(content, filename, file_format="markdown"):
         href = f'<a href="data:text/plain;base64,{b64}" download="{filename}">📥 Download {filename}</a>'
     return href
 
+def markdown_to_docx(markdown_text, title="Optimized Content"):
+    """Convert markdown text to a Word document with formatting"""
+    doc = Document()
+    
+    # Set default font
+    style = doc.styles['Normal']
+    font = style.font
+    font.name = 'Calibri'
+    font.size = Pt(11)
+    
+    # Split content into lines
+    lines = markdown_text.split('\n')
+    
+    for line in lines:
+        line = line.strip()
+        
+        if not line:
+            # Empty line - add paragraph break
+            doc.add_paragraph()
+            continue
+        
+        # H1 headers
+        if line.startswith('# ') and not line.startswith('## '):
+            text = line.replace('# ', '')
+            p = doc.add_heading(text, level=1)
+        
+        # H2 headers
+        elif line.startswith('## ') and not line.startswith('### '):
+            text = line.replace('## ', '')
+            p = doc.add_heading(text, level=2)
+        
+        # H3 headers
+        elif line.startswith('### '):
+            text = line.replace('### ', '')
+            p = doc.add_heading(text, level=3)
+        
+        # Bullet points
+        elif line.startswith('- ') or line.startswith('* '):
+            text = line[2:]
+            p = doc.add_paragraph(text, style='List Bullet')
+        
+        # Numbered lists
+        elif re.match(r'^\d+\.\s', line):
+            text = re.sub(r'^\d+\.\s', '', line)
+            p = doc.add_paragraph(text, style='List Number')
+        
+        # Bold text (simplified - just remove ** markers for now)
+        elif '**' in line:
+            text = line.replace('**', '')
+            p = doc.add_paragraph(text)
+            for run in p.runs:
+                run.bold = True
+        
+        # Regular paragraph
+        else:
+            doc.add_paragraph(line)
+    
+    # Save to BytesIO
+    docx_file = BytesIO()
+    doc.save(docx_file)
+    docx_file.seek(0)
+    
+    return docx_file
+
 # === TAB 1: OUTLINE OPTIMIZER ===
 def audience_research_analysis(keyword, model):
     """Perform deep audience research and search intent analysis"""
@@ -406,30 +474,44 @@ OUTPUT: Only provide the rewritten paragraph, nothing else."""
 
 def ai_tool_optimization(draft_content, primary_keyword, keyword_list, model):
     """Apply 10-item AI optimization checklist"""
+    
+    # Count original words
+    original_word_count = len(draft_content.split())
+    
     prompt = f"""You are an expert content optimizer for AI search tools (Google AI Overviews, ChatGPT, Claude, Perplexity).
 
 PRIMARY KEYWORD: {primary_keyword}
 KEYWORDS: {', '.join(keyword_list[:10])}
 
-CONTENT DRAFT:
+CONTENT DRAFT (Original word count: {original_word_count} words):
 {draft_content}
 
-Apply these 10 optimizations:
+CRITICAL REQUIREMENTS:
+1. MAINTAIN OR EXPAND the original content length - aim for {original_word_count} to {int(original_word_count * 1.2)} words
+2. DO NOT shorten or remove substantial content
+3. ADD details, examples, data, and depth rather than removing content
+4. Enhancement means ADDING VALUE, not reducing content
 
-1. **Answer-First Introduction**: Rewrite opening 30-50 words to directly answer core query
-2. **Question-Based H2s**: Convert all H2 headings to natural questions
-3. **Semantic Chunks**: Ensure 75-300 word self-contained sections
-4. **Answer-Evidence-Context**: Restructure chunks (answer -> evidence -> context)
-5. **Direct Sentences**: Convert to active voice, Subject-Verb-Object
-6. **Informational Density**: Increase specifics by 20% (numbers, entities)
-7. **Attribute Claims**: Replace generics with "A 2023 study by XYZ found..."
-8. **Signal Experience**: Add "In our testing..." where applicable
-9. **FAQ Section**: Append 3-10 long-tail Q&A pairs
-10. **Title & Meta**: Generate optimized title (<60 chars) and meta (140-160 chars)
+Apply these 10 optimizations while PRESERVING OR EXPANDING content:
 
-OUTPUT the fully optimized content in Markdown format with clear section breaks. Mark changes with [OPTIMIZED] tags inline."""
+1. **Answer-First Introduction**: Rewrite opening 30-50 words to directly answer core query (keep rest of intro)
+2. **Question-Based H2s**: Convert all H2 headings to natural questions (keep all content under each heading)
+3. **Semantic Chunks**: Ensure 75-300 word self-contained sections (expand short sections, don't shorten long ones)
+4. **Answer-Evidence-Context**: Restructure chunks (answer -> evidence -> context) - ADD evidence and context, don't remove
+5. **Direct Sentences**: Convert to active voice, Subject-Verb-Object (maintain all information)
+6. **Informational Density**: Increase specifics by 20% (numbers, entities, examples) - this means ADDING content
+7. **Attribute Claims**: Replace generics with "A 2023 study by XYZ found..." - ADD citations and sources
+8. **Signal Experience**: Add "In our testing..." where applicable - ADD first-hand insights
+9. **FAQ Section**: Append 3-10 long-tail Q&A pairs at the end - this ADDS content
+10. **Title & Meta**: Generate optimized title (<60 chars) and meta (140-160 chars) at the top
 
-    return call_ai_model(prompt, model, max_tokens=4000)
+OUTPUT the fully optimized content in clean Markdown format. 
+- Do NOT add any tags, markers, or annotations like [OPTIMIZED]
+- Output should be clean, ready-to-use content
+- Ensure final word count is AT LEAST {int(original_word_count * 0.95)} words (95% of original minimum)
+- Aim to EXPAND content with valuable details, not compress it"""
+
+    return call_ai_model(prompt, model, max_tokens=8000)
 
 # === MAIN APP ===
 def main():
@@ -522,7 +604,7 @@ def main():
             draft_outline = st.text_area(
                 "Draft Outline (Markdown) *",
                 placeholder="## Introduction\n\n## Main Point 1\n### Subpoint 1.1\n\n## Conclusion",
-                height=200,
+                height=250,
                 key="draft_outline_input"
             )
             
@@ -537,7 +619,7 @@ def main():
             query_fanout = st.text_area(
                 "Query Fan-Out Analysis",
                 placeholder="Paste your Query Fan-Out report here (structured text with expanded queries, related terms, intent insights)",
-                height=200,
+                height=250,
                 key="query_fanout_input"
             )
             
@@ -566,23 +648,34 @@ def main():
                 # Step 1: Audience Research
                 with st.spinner("🔍 Step 1/2: Conducting deep audience research..."):
                     progress_bar = st.progress(0)
+                    status_text = st.empty()
+                    
+                    status_text.text("Analyzing search intent and user psychology...")
+                    progress_bar.progress(20)
                     
                     audience_insights = audience_research_analysis(keyword_outline, selected_model)
                     st.session_state.audience_insights = audience_insights
-                    progress_bar.progress(50)
+                    
+                    status_text.text("Research complete!")
+                    progress_bar.progress(100)
                     
                     if audience_insights:
                         st.success("✅ Audience research complete!")
                         with st.expander("📊 View Audience Insights", expanded=False):
                             st.markdown(audience_insights)
                     
-                    progress_bar.progress(100)
+                    status_text.empty()
                 
                 # Step 2: Outline Optimization
                 with st.spinner("✨ Step 2/2: Optimizing outline..."):
                     progress_bar2 = st.progress(0)
+                    status_text2 = st.empty()
                     
                     fanout_text = query_fanout if query_fanout else "No Query Fan-Out analysis provided."
+                    
+                    status_text2.text("Cross-referencing with Query Fan-Out analysis...")
+                    progress_bar2.progress(30)
+                    
                     optimized_outline = optimize_outline(
                         keyword_outline,
                         draft_outline,
@@ -591,8 +684,12 @@ def main():
                         selected_model
                     )
                     
+                    status_text2.text("Generating talking points...")
+                    progress_bar2.progress(90)
+                    
                     st.session_state.outline_result = optimized_outline
                     progress_bar2.progress(100)
+                    status_text2.empty()
                 
                 if optimized_outline:
                     st.markdown("---")
