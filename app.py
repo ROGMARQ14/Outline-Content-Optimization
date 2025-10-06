@@ -256,7 +256,7 @@ def create_download_link(content, filename, file_format="markdown"):
 # === TAB 1: OUTLINE OPTIMIZER ===
 def audience_research_analysis(keyword, model):
     """Perform deep audience research and search intent analysis"""
-    Prompt = f"""Conduct advanced audience research for the keyword/topic: "{keyword}"
+    prompt = f"""Conduct advanced audience research for the keyword/topic: "{keyword}"
 
 Focus on:
 1. Ideal Customer Profile (ICP) - Demographics and psychographics
@@ -275,7 +275,7 @@ Provide a comprehensive analysis structured as:
 - **Key Questions**: Top 10 questions they ask
 - **Resonance Strategy**: How to create content that connects
 
-Be specific, actionable, and data-driven in your analysis.""
+Be specific, actionable, and data-driven in your analysis."""
 
     return call_ai_model(prompt, model, max_tokens=3000)
 
@@ -490,10 +490,7 @@ def main():
         st.markdown("---")
         st.markdown("**💡 Setup Instructions:**")
         st.markdown("Add API keys to Streamlit Cloud Secrets:")
-        st.code("""OPENAI_API_KEY = "your-key"
-ANTHROPIC_API_KEY = "your-key"
-GOOGLE_API_KEY = "your-key"
-""")
+        st.code('OPENAI_API_KEY = "your-key"\nANTHROPIC_API_KEY = "your-key"\nGOOGLE_API_KEY = "your-key"')
         
         st.markdown("---")
         st.markdown("**💰 Cost Comparison:**")
@@ -765,7 +762,4 @@ GOOGLE_API_KEY = "your-key"
                     )
 
 if __name__ == "__main__":
-
     main()
-
-
