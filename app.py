@@ -491,11 +491,13 @@ CRITICAL REQUIREMENTS:
 2. DO NOT shorten or remove substantial content
 3. ADD details, examples, data, and depth rather than removing content
 4. Enhancement means ADDING VALUE, not reducing content
+5. KEEP ALL ORIGINAL HEADINGS - do NOT convert them to questions
+6. DO NOT start sections with questions - use direct, declarative statements that ANSWER immediately
 
-Apply these 10 optimizations while PRESERVING OR EXPANDING content:
+Apply these optimizations while PRESERVING OR EXPANDING content:
 
-1. **Answer-First Introduction**: Rewrite opening 30-50 words to directly answer core query (keep rest of intro)
-2. **Question-Based H2s**: Convert all H2 headings to natural questions (keep all content under each heading)
+1. **Answer-First Introduction**: Rewrite opening to DIRECTLY ANSWER the core query with declarative statements (no questions)
+2. **Answer-First Sections**: EVERY section must start with a direct answer statement, NOT a question
 3. **Semantic Chunks**: Ensure 75-300 word self-contained sections (expand short sections, don't shorten long ones)
 4. **Answer-Evidence-Context**: Restructure chunks (answer -> evidence -> context) - ADD evidence and context, don't remove
 5. **Direct Sentences**: Convert to active voice, Subject-Verb-Object (maintain all information)
@@ -505,9 +507,19 @@ Apply these 10 optimizations while PRESERVING OR EXPANDING content:
 9. **FAQ Section**: Append 3-10 long-tail Q&A pairs at the end - this ADDS content
 10. **Title & Meta**: Generate optimized title (<60 chars) and meta (140-160 chars) at the top
 
+WRITING STYLE RULES:
+- NEVER start a section with a question
+- Lead with direct, declarative statements
+- Example WRONG: "Is it safe to brush after whitening strips?"
+- Example CORRECT: "You can safely brush your teeth 30 minutes after using whitening strips."
+- Use statements, not questions, throughout the main content
+- Questions are ONLY allowed in the FAQ section at the end
+
 OUTPUT the fully optimized content in clean Markdown format. 
-- Do NOT add any tags, markers, or annotations like [OPTIMIZED]
+- Do NOT add any tags, markers, or annotations
 - Output should be clean, ready-to-use content
+- PRESERVE the original heading structure - do NOT convert headings to questions
+- DO NOT start sections with questions - always lead with answers
 - Ensure final word count is AT LEAST {int(original_word_count * 0.95)} words (95% of original minimum)
 - Aim to EXPAND content with valuable details, not compress it"""
 
