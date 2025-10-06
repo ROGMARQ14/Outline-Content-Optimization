@@ -492,7 +492,7 @@ def main():
         st.markdown("Add API keys to Streamlit Cloud Secrets:")
         st.code("""OPENAI_API_KEY = "your-key"
 ANTHROPIC_API_KEY = "your-key"
-GOOGLE_API_KEY = "your-key")
+GOOGLE_API_KEY = "your-key" """)
         
         st.markdown("---")
         st.markdown("**💰 Cost Comparison:**")
@@ -766,3 +766,4 @@ GOOGLE_API_KEY = "your-key")
 if __name__ == "__main__":
 
     main()
+
