@@ -522,27 +522,40 @@ def main():
             draft_outline = st.text_area(
                 "Draft Outline (Markdown) *",
                 placeholder="## Introduction\n\n## Main Point 1\n### Subpoint 1.1\n\n## Conclusion",
-                height=300,
+                height=200,
                 key="draft_outline_input"
+            )
+            
+            uploaded_outline = st.file_uploader(
+                "Or Upload Draft Outline",
+                type=['txt', 'md'],
+                key="outline_upload",
+                help="Upload your draft outline as a Markdown or text file"
             )
         
         with col2:
             query_fanout = st.text_area(
                 "Query Fan-Out Analysis",
                 placeholder="Paste your Query Fan-Out report here (structured text with expanded queries, related terms, intent insights)",
-                height=300,
+                height=200,
                 key="query_fanout_input"
             )
             
             uploaded_fanout = st.file_uploader(
                 "Or Upload Query Fan-Out Report",
                 type=['txt', 'md'],
-                key="fanout_upload"
+                key="fanout_upload",
+                help="Upload your Query Fan-Out analysis report"
             )
+        
+        # Handle file uploads
+        if uploaded_outline:
+            draft_outline = uploaded_outline.read().decode('utf-8')
+            st.success("✅ Outline uploaded successfully!")
         
         if uploaded_fanout:
             query_fanout = uploaded_fanout.read().decode('utf-8')
-            st.success("✅ File uploaded successfully!")
+            st.success("✅ Query Fan-Out report uploaded successfully!")
         
         st.markdown("---")
         
@@ -632,24 +645,26 @@ def main():
             draft_content = st.text_area(
                 "Content Draft *",
                 placeholder="Paste your blog draft here (Markdown or HTML supported)",
-                height=400,
+                height=300,
                 key="draft_content_input"
+            )
+            
+            uploaded_draft = st.file_uploader(
+                "Or Upload Draft File",
+                type=['txt', 'md', 'html'],
+                key="draft_upload",
+                help="Upload your blog draft as Markdown, text, or HTML"
             )
         
         with draft_col2:
             keyword_list_input = st.text_area(
                 "Expanded Keyword List *",
                 placeholder="keyword 1\nkeyword 2\nkeyword 3",
-                height=200,
+                height=300,
                 key="keyword_list_input"
             )
-            
-            uploaded_draft = st.file_uploader(
-                "Or Upload Draft File",
-                type=['txt', 'md', 'html'],
-                key="draft_upload"
-            )
         
+        # Handle file upload
         if uploaded_draft:
             draft_content = uploaded_draft.read().decode('utf-8')
             st.success("✅ Draft uploaded successfully!")
