@@ -419,7 +419,7 @@ Apply these 10 optimizations:
 1. **Answer-First Introduction**: Rewrite opening 30-50 words to directly answer core query
 2. **Question-Based H2s**: Convert all H2 headings to natural questions
 3. **Semantic Chunks**: Ensure 75-300 word self-contained sections
-4. **Answer-Evidence-Context**: Restructure chunks (answer → evidence → context)
+4. **Answer-Evidence-Context**: Restructure chunks (answer -> evidence -> context)
 5. **Direct Sentences**: Convert to active voice, Subject-Verb-Object
 6. **Informational Density**: Increase specifics by 20% (numbers, entities)
 7. **Attribute Claims**: Replace generics with "A 2023 study by XYZ found..."
@@ -766,3 +766,4 @@ GOOGLE_API_KEY = "your-key" """)
 if __name__ == "__main__":
 
     main()
+
