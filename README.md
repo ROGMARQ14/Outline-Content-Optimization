@@ -7,11 +7,22 @@ A comprehensive Streamlit application that leverages cutting-edge AI models (GPT
 This repository includes:
 - **app.py** - Main Streamlit application
 - **requirements.txt** - Python dependencies (includes spaCy model download)
+- **.python-version** - Specifies Python 3.11 for compatibility
 - **README.md** - Comprehensive documentation (this file)
+- **PYTHON_VERSION_GUIDE.md** - Important compatibility guide for Python versions
 - **QUICKSTART.md** - 10-minute deployment guide
 - **TROUBLESHOOTING.md** - Common issues and solutions
 - **secrets.toml.example** - Template for API key configuration
 - **.streamlit/config.toml** - Optional UI configuration
+
+## ⚠️ Python Version Notice
+
+**Using Python 3.12?** You'll encounter compatibility errors with spaCy. **Two solutions:**
+
+1. **Recommended:** Add `.python-version` file with "3.11" to use Python 3.11
+2. **Alternative:** Use the NLTK-based version (see [PYTHON_VERSION_GUIDE.md](PYTHON_VERSION_GUIDE.md))
+
+The `.python-version` file is already included in this repository, so if you clone it, you'll automatically use Python 3.11.
 
 ## 🚀 Quick Start
 
@@ -59,12 +70,14 @@ This repository includes:
 
 ## 📋 Requirements
 
-- Python 3.9+
+- **Python 3.11** (recommended) or Python 3.12 with modifications
 - At least one AI provider API key:
   - **OpenAI API Key** (for GPT-4o models)
   - **Anthropic API Key** (for Claude models)
   - **Google API Key** (for Gemini models)
 - Streamlit Cloud account (for deployment)
+
+**⚠️ Important:** If using Python 3.12, see [PYTHON_VERSION_GUIDE.md](PYTHON_VERSION_GUIDE.md) for compatibility instructions. Python 3.11 is strongly recommended for easiest setup.
 
 **Note:** You don't need all three API keys! The app intelligently detects which keys you've configured and only shows models from those providers.
 

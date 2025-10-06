@@ -2,6 +2,44 @@
 
 ## 🔥 Common Issues & Solutions
 
+### Issue 0: Python 3.12 Compatibility Error (MOST COMMON)
+
+**Error Message:**
+```
+ValueError: numpy.dtype size changed, may indicate binary incompatibility
+OR
+ImportError: cannot import name 'Optimizer' from 'thinc.api'
+```
+
+**Root Cause:**
+spaCy and thinc have compatibility issues with Python 3.12.
+
+**✅ Solution (EASIEST):**
+
+Add a `.python-version` file to your repository with this content:
+```
+3.11
+```
+
+Then push to GitHub and redeploy. Streamlit Cloud will automatically use Python 3.11.
+
+**Alternative Solution:**
+If you MUST use Python 3.12, see [PYTHON_VERSION_GUIDE.md](PYTHON_VERSION_GUIDE.md) for the NLTK-based version.
+
+**Steps:**
+1. Create file named `.python-version` (no extension)
+2. Add single line: `3.11`
+3. Save in repository root
+4. Push to GitHub:
+   ```bash
+   git add .python-version
+   git commit -m "Use Python 3.11"
+   git push
+   ```
+5. Redeploy app on Streamlit Cloud
+
+---
+
 ### Issue 1: "spaCy model not found" Error
 
 **Error Message:**
