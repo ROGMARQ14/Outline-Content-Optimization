@@ -65,11 +65,19 @@ def load_nlp_models():
     try:
         # Load spaCy model
         nlp = spacy.load("en_core_web_sm")
-    except:
-        st.warning("Downloading spaCy model... This is a one-time setup.")
-        import subprocess
-        subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
-        nlp = spacy.load("en_core_web_sm")
+    except OSError:
+        # Model not found - show helpful error for Streamlit Cloud users
+        st.error("""
+        ⚠️ **spaCy model not found!**
+        
+        Please add this line to your `requirements.txt`:
+        ```
+        https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
+        ```
+        
+        Then redeploy your app.
+        """)
+        st.stop()
     
     # Load sentence transformer for semantic similarity
     semantic_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -79,13 +87,31 @@ def load_nlp_models():
 # API Configuration
 def get_api_keys():
     """Retrieve API keys from Streamlit secrets"""
+    openai_key = ""
+    anthropic_key = ""
+    google_key = ""
+    
     try:
-        openai_key = st.secrets.get("OPENAI_API_KEY", "")
-        anthropic_key = st.secrets.get("ANTHROPIC_API_KEY", "")
-        google_key = st.secrets.get("GOOGLE_API_KEY", "")
-        return openai_key, anthropic_key, google_key
-    except:
-        return "", "", ""
+        if "OPENAI_API_KEY" in st.secrets:
+            openai_key = st.secrets["OPENAI_API_KEY"]
+            # Ensure it's not empty
+            if not openai_key or openai_key.strip() == "":
+                openai_key = ""
+        
+        if "ANTHROPIC_API_KEY" in st.secrets:
+            anthropic_key = st.secrets["ANTHROPIC_API_KEY"]
+            if not anthropic_key or anthropic_key.strip() == "":
+                anthropic_key = ""
+        
+        if "GOOGLE_API_KEY" in st.secrets:
+            google_key = st.secrets["GOOGLE_API_KEY"]
+            if not google_key or google_key.strip() == "":
+                google_key = ""
+    except Exception as e:
+        # Secrets not configured or error accessing them
+        pass
+    
+    return openai_key, anthropic_key, google_key
 
 def get_available_models():
     """Get available models based on configured API keys"""
@@ -93,21 +119,21 @@ def get_available_models():
     
     models = {}
     
-    if openai_key:
+    if openai_key and len(openai_key) > 10:  # Basic validation
         models["OpenAI"] = {
             "gpt-4o": "GPT-4o (Latest, Most Capable)",
             "gpt-4o-mini": "GPT-4o Mini (Fast & Efficient)",
             "gpt-4-turbo": "GPT-4 Turbo (Balanced)"
         }
     
-    if anthropic_key:
+    if anthropic_key and len(anthropic_key) > 10:  # Basic validation
         models["Anthropic"] = {
             "claude-3-5-sonnet-20241022": "Claude 3.5 Sonnet (Recommended)",
             "claude-3-5-haiku-20241022": "Claude 3.5 Haiku (Fast)",
             "claude-3-opus-20240229": "Claude 3 Opus (Most Capable)"
         }
     
-    if google_key:
+    if google_key and len(google_key) > 10:  # Basic validation
         models["Google"] = {
             "gemini-2.0-flash-exp": "Gemini 2.0 Flash (Experimental, Fastest)",
             "gemini-1.5-pro": "Gemini 1.5 Pro (Balanced)",
@@ -120,8 +146,8 @@ def get_available_models():
 def call_openai(prompt, model="gpt-4o", max_tokens=4000):
     """Call OpenAI API"""
     openai_key, _, _ = get_api_keys()
-    if not openai_key:
-        st.error("OpenAI API key not found in secrets!")
+    if not openai_key or len(openai_key) < 10:
+        st.error("⚠️ OpenAI API key not found or invalid in secrets!")
         return None
     
     try:
@@ -134,14 +160,14 @@ def call_openai(prompt, model="gpt-4o", max_tokens=4000):
         )
         return response.choices[0].message.content
     except Exception as e:
-        st.error(f"OpenAI API Error: {str(e)}")
+        st.error(f"❌ OpenAI API Error: {str(e)}")
         return None
 
 def call_anthropic(prompt, model="claude-3-5-sonnet-20241022", max_tokens=4000):
     """Call Anthropic API"""
     _, anthropic_key, _ = get_api_keys()
-    if not anthropic_key:
-        st.error("Anthropic API key not found in secrets!")
+    if not anthropic_key or len(anthropic_key) < 10:
+        st.error("⚠️ Anthropic API key not found or invalid in secrets!")
         return None
     
     try:
@@ -153,14 +179,14 @@ def call_anthropic(prompt, model="claude-3-5-sonnet-20241022", max_tokens=4000):
         )
         return message.content[0].text
     except Exception as e:
-        st.error(f"Anthropic API Error: {str(e)}")
+        st.error(f"❌ Anthropic API Error: {str(e)}")
         return None
 
 def call_gemini(prompt, model="gemini-1.5-pro", max_tokens=4000):
     """Call Google Gemini API"""
     _, _, google_key = get_api_keys()
-    if not google_key:
-        st.error("Google API key not found in secrets!")
+    if not google_key or len(google_key) < 10:
+        st.error("⚠️ Google API key not found or invalid in secrets!")
         return None
     
     try:
@@ -178,7 +204,7 @@ def call_gemini(prompt, model="gemini-1.5-pro", max_tokens=4000):
         )
         return response.text
     except Exception as e:
-        st.error(f"Google Gemini API Error: {str(e)}")
+        st.error(f"❌ Google Gemini API Error: {str(e)}")
         return None
 
 def call_ai_model(prompt, model_string, max_tokens=4000):
@@ -230,20 +256,26 @@ def create_download_link(content, filename, file_format="markdown"):
 # === TAB 1: OUTLINE OPTIMIZER ===
 def audience_research_analysis(keyword, model):
     """Perform deep audience research and search intent analysis"""
-    prompt = f"""You are an expert Digital Marketing Strategist and Audience Researcher, specializing in deep psychological profiling and cross-platform search behavior analysis.
+    prompt = f"""Conduct advanced audience research for the keyword/topic: "{keyword}"
 
-Your primary objective is to conduct advanced, data-driven audience research for the specified keyword/topic: "{keyword}". This analysis must be comprehensive, actionable, and focus on understanding the user's journey, motivations, and information needs across modern search environments.
+Focus on:
+1. Ideal Customer Profile (ICP) - Demographics and psychographics
+2. Core pain points and frustrations that drive searches
+3. Emotional triggers and psychological motivations
+4. Search behaviors across platforms (Google, ChatGPT, Claude, Perplexity, Gemini)
+5. User intent clusters (informational, transactional, navigational, investigational)
+6. Common questions and information gaps
+7. Resonance strategies - how to connect with this audience
 
-The analysis must cover the following seven critical dimensions in detail:
-1. **Ideal Customer Profile (ICP):** Detailed demographics and psychographics.
-2. **Core Pain Points:** Specific frustrations and problems driving the search.
-3. **Emotional Triggers:** Underlying psychological motivations for seeking information.
-4. **Cross-Platform Search Behavior:** How users search for this topic specifically on Google, ChatGPT, Claude, Perplexity, and Gemini.
-5. **User Intent Clusters:** Categorization of intent (informational, transactional, navigational, investigational).
-6. **Information Gaps:** Common questions and missing information users are trying to fill.
-7. **Resonance Strategies:** Actionable methods for creating content that deeply connects with this audience.
+Provide a comprehensive analysis structured as:
+- **Demographics & Psychographics**: Who searches for this?
+- **Pain Points**: What problems are they trying to solve?
+- **Emotional Triggers**: What drives their search behavior?
+- **Intent Clusters**: What are they really looking for?
+- **Key Questions**: Top 10 questions they ask
+- **Resonance Strategy**: How to create content that connects
 
-The final output must be highly specific, actionable, and grounded in analytical insight. Avoid generic statements. Focus on providing depth in each area requested. The analysis must be data-driven."""
+Be specific, actionable, and data-driven in your analysis."""
 
     return call_ai_model(prompt, model, max_tokens=3000)
 
@@ -354,17 +386,19 @@ def keyword_relevance_analysis(primary_keyword, keyword_list, draft_content, nlp
 
 def generate_keyword_integration(keyword, paragraph_context, model):
     """Generate natural keyword integration"""
-    prompt = f"""You are an expert SEO Content Editor specializing in seamless keyword integration and natural language flow.
-
-Your primary objective is to rewrite the provided paragraph, ensuring the specified keyword is integrated contextually and naturally. The revised paragraph must maintain the original tone, structure, and overall meaning.
+    prompt = f"""You are a skilled content writer. Rewrite the following paragraph to naturally integrate the keyword while maintaining flow and readability.
 
 KEYWORD TO INTEGRATE: {keyword}
-ORIGINAL PARAGRAPH: {paragraph_context}
 
-- **Integration Quality:** The keyword must be woven into the text so that it reads as if it were originally intended to be there (no keyword stuffing).
-- **Tone and Structure:** Strictly adhere to the tone and structural flow of the original paragraph.
-- **Length Constraint:** The final rewritten paragraph must remain within the original length range, ideally between 50 and 200 words.
-- **Readiness:** The output must be immediately copy-paste ready for publication.
+ORIGINAL PARAGRAPH:
+{paragraph_context}
+
+REQUIREMENTS:
+- Integrate the keyword naturally and contextually
+- Maintain the original tone and structure
+- Keep paragraph length similar (50-200 words)
+- Ensure it reads naturally, not stuffed
+- Make it copy-paste ready
 
 OUTPUT: Only provide the rewritten paragraph, nothing else."""
 
@@ -372,26 +406,26 @@ OUTPUT: Only provide the rewritten paragraph, nothing else."""
 
 def ai_tool_optimization(draft_content, primary_keyword, keyword_list, model):
     """Apply 10-item AI optimization checklist"""
-    prompt = f"""You are an elite Content Optimization Specialist, specifically trained in maximizing content performance for modern AI Search Engines and Generative AI platforms (including Google AI Overviews, ChatGPT, Claude, and Perplexity). Your primary objective is to transform the provided content draft into a highly optimized, authoritative, and direct piece of content that satisfies complex AI ranking signals.
-
-The core task is to apply a precise set of 10 content optimization rules to the provided DRAFT CONTENT, using the specified KEYWORDS to guide semantic relevance and depth. The final output must strictly adhere to all ten optimization criteria listed below.
+    prompt = f"""You are an expert content optimizer for AI search tools (Google AI Overviews, ChatGPT, Claude, Perplexity).
 
 PRIMARY KEYWORD: {primary_keyword}
-KEYWORDS TO INTEGRATE: {', '.join(keyword_list[:10])}
-CONTENT DRAFT TO OPTIMIZE: {draft_content}
+KEYWORDS: {', '.join(keyword_list[:10])}
 
-Apply the following 10 mandatory optimizations sequentially and thoroughly:
+CONTENT DRAFT:
+{draft_content}
 
-1. **Answer-First Introduction**: Rewrite the opening section (30-50 words) to provide an immediate, direct answer to the core query implied by the primary keyword.
-2. **Question-Based H2s**: Systematically convert all existing H2 headings into natural, user-intent-driven questions.
-3. **Semantic Chunking**: Ensure every resulting content section is self-contained and falls within a length range of 75 to 300 words.
-4. **A-E-C Structure**: Restructure the content within each chunk following the strict sequence: **Answer** (direct response) → **Evidence** (supporting data/facts) → **Context** (broader implications/background).
-5. **Active Voice & Clarity**: Convert all sentences to active voice, prioritizing a clear Subject-Verb-Object structure for maximum readability.
-6. **Informational Density Boost**: Increase the density of specific, verifiable details (e.g., numbers, specific entities, dates) by approximately 20% across the body.
-7. **Claim Attribution**: Replace vague or generic statements with specific attribution. For example, change general claims to formats like: "A 2023 study by XYZ found..." or "According to industry standard ABC..."
-8. **Demonstrate Authority**: Integrate phrases that signal direct experience or testing, such as "In our testing..." or "Based on our hands-on evaluation...", where contextually appropriate.
-9. **Long-Tail FAQ Section**: Append a dedicated FAQ section containing between 3 and 10 distinct, long-tail questions and their corresponding detailed answers.
-10. **SEO Metadata Generation**: Generate an optimized Title Tag (must be under 60 characters) and a compelling Meta Description (must be between 140 and 160 characters).
+Apply these 10 optimizations:
+
+1. **Answer-First Introduction**: Rewrite opening 30-50 words to directly answer core query
+2. **Question-Based H2s**: Convert all H2 headings to natural questions
+3. **Semantic Chunks**: Ensure 75-300 word self-contained sections
+4. **Answer-Evidence-Context**: Restructure chunks (answer → evidence → context)
+5. **Direct Sentences**: Convert to active voice, Subject-Verb-Object
+6. **Informational Density**: Increase specifics by 20% (numbers, entities)
+7. **Attribute Claims**: Replace generics with "A 2023 study by XYZ found..."
+8. **Signal Experience**: Add "In our testing..." where applicable
+9. **FAQ Section**: Append 3-10 long-tail Q&A pairs
+10. **Title & Meta**: Generate optimized title (<60 chars) and meta (140-160 chars)
 
 OUTPUT the fully optimized content in Markdown format with clear section breaks. Mark changes with [OPTIMIZED] tags inline."""
 
@@ -409,17 +443,17 @@ def main():
         
         # Display API connection status
         st.subheader("API Connection Status")
-        if openai_key:
+        if openai_key and len(openai_key) > 10:  # Basic validation
             st.success("✅ OpenAI API Connected")
         else:
             st.warning("⚠️ OpenAI API Key Missing")
         
-        if anthropic_key:
+        if anthropic_key and len(anthropic_key) > 10:  # Basic validation
             st.success("✅ Anthropic API Connected")
         else:
             st.warning("⚠️ Anthropic API Key Missing")
         
-        if google_key:
+        if google_key and len(google_key) > 10:  # Basic validation
             st.success("✅ Google Gemini API Connected")
         else:
             st.warning("⚠️ Google API Key Missing")
@@ -730,5 +764,4 @@ GOOGLE_API_KEY = "your-key" """)
                     )
 
 if __name__ == "__main__":
-
     main()

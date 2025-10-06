@@ -2,6 +2,31 @@
 
 A comprehensive Streamlit application that leverages cutting-edge AI models (GPT-4o, Claude 3.5 Sonnet) and ML/NLP packages to optimize blog content for SEO and AI search tools.
 
+## 📦 Complete Package Files
+
+This repository includes:
+- **app.py** - Main Streamlit application
+- **requirements.txt** - Python dependencies (includes spaCy model download)
+- **README.md** - Comprehensive documentation (this file)
+- **QUICKSTART.md** - 10-minute deployment guide
+- **TROUBLESHOOTING.md** - Common issues and solutions
+- **secrets.toml.example** - Template for API key configuration
+- **.streamlit/config.toml** - Optional UI configuration
+
+## 🚀 Quick Start
+
+**New to deployment?** Follow [QUICKSTART.md](QUICKSTART.md) for step-by-step instructions.
+
+**Experienced?** Here's the TL;DR:
+
+1. Clone repo
+2. Add at least one API key to Streamlit Secrets
+3. Deploy to Streamlit Cloud
+4. Wait 3-5 minutes for first load
+5. Start optimizing!
+
+---
+
 ## 🚀 Features
 
 ### Tab 1: Outline Optimizer
@@ -53,12 +78,13 @@ cd blog-optimizer
 # Install dependencies
 pip install -r requirements.txt
 
-# Download spaCy model
-python -m spacy download en_core_web_sm
+# Note: The spaCy model will be downloaded automatically via requirements.txt
 
 # Run locally
 streamlit run app.py
 ```
+
+**Important:** The `requirements.txt` includes a direct URL to download the spaCy model. This is required for Streamlit Cloud deployment.
 
 ## ☁️ Streamlit Cloud Deployment
 
@@ -183,6 +209,23 @@ Click "Deploy!" and wait for the app to build. First deployment may take 3-5 min
 - **Error Handling**: Graceful degradation with informative messages
 
 ## 🐛 Troubleshooting
+
+### Common Issues
+
+**"spaCy model not found" error:**
+- Ensure your `requirements.txt` includes the spaCy model download URL (last line)
+- Redeploy your app after updating requirements.txt
+
+**False "API Connected" status:**
+- Check that secrets are properly formatted (no empty values)
+- Verify keys are at least 10 characters long
+- Remove any placeholder text like "your-key-here"
+
+**App won't start:**
+- Add at least one valid API key to Streamlit Secrets
+- Reboot app after adding secrets
+
+**For detailed solutions, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - comprehensive guide with all common issues and fixes.
 
 ### Common Issues
 
